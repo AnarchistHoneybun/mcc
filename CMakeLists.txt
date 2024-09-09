@@ -7,4 +7,7 @@ add_executable(mcc main.cpp
         compiler_driver.h
         compiler_driver.cpp
         lexer.h
-        lexer.cpp)
+        lexer.cpp
+        ast.h
+        parser.h
+        parser.cpp)

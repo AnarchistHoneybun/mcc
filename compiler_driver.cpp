@@ -51,7 +51,21 @@ int CompilerDriver::run(int argc, char* argv[]) {
     if (m_lex_only) {
         return runLexer(m_input_file) ? 0 : 1;
     } else if (m_parse_only) {
-        // Implement parser functionality (including lexer)
+        std::ifstream file(m_input_file);
+        if (!file.is_open()) {
+            std::cerr << "Error: Unable to open file " << m_input_file << std::endl;
+            return 1;
+        }
+        std::string input((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        Lexer lexer(input);
+        std::vector<Token> tokens;
+        try {
+            tokens = lexer.tokenize();
+        } catch (const std::exception& e) {
+            std::cerr << "Lexer error: " << e.what() << std::endl;
+            return 1;
+        }
+        return runParser(tokens) ? 0 : 1;
     } else if (m_codegen_only) {
         // Implement code generation (including lexer and parser)
     } else {
@@ -120,6 +134,19 @@ bool CompilerDriver::runLexer(const std::string& input_file) {
     }
 
     return true;
+}
+
+bool CompilerDriver::runParser(const std::vector<Token>& tokens) {
+    try {
+        Parser parser(tokens);
+        std::unique_ptr<Program> ast = parser.parse();
+        std::cout << "Parsing successful. AST created." << std::endl;
+        // You can add more detailed AST printing here if needed
+        return true;
+    } catch (const ParseError& e) {
+        std::cerr << "Parsing error: " << e.what() << std::endl;
+        return false;
+    }
 }
 
 void CompilerDriver::printUsage() {
