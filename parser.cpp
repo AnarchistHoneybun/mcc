@@ -1,8 +1,5 @@
-//
-// Created by vrin on 9/9/24.
-//
-
 #include "parser.h"
+#include <sstream>
 
 Parser::Parser(std::vector<Token> tokens) : m_tokens(std::move(tokens)), m_position(0) {}
 
@@ -18,7 +15,7 @@ std::unique_ptr<Function> Parser::parseFunction() {
     expect(TokenType::INT_KEYWORD);
     auto name = consumeToken();
     if (name.type != TokenType::IDENTIFIER) {
-        throw ParseError("Expected function name");
+        throw ParseError("Expected function name (identifier) but found " + tokenTypeToString(name.type));
     }
     expect(TokenType::OPEN_PAREN);
     expect(TokenType::VOID_KEYWORD);
@@ -39,15 +36,19 @@ std::unique_ptr<Statement> Parser::parseStatement() {
 std::unique_ptr<Exp> Parser::parseExp() {
     auto token = consumeToken();
     if (token.type != TokenType::CONSTANT) {
-        throw ParseError("Expected constant expression");
+        throw ParseError("Expected constant but found " + tokenTypeToString(token.type));
     }
     return std::make_unique<Constant>(std::stoi(token.value));
 }
 
 void Parser::expect(TokenType type) {
-    if (!match(type)) {
-        throw ParseError("Unexpected token");
+    if (m_position >= m_tokens.size()) {
+        throw ParseError("Expected " + tokenTypeToString(type) + " but found end of input");
     }
+    if (m_tokens[m_position].type != type) {
+        throw ParseError("Expected " + tokenTypeToString(type) + " but found " + tokenTypeToString(m_tokens[m_position].type));
+    }
+    m_position++;
 }
 
 Token Parser::consumeToken() {
@@ -63,4 +64,20 @@ bool Parser::match(TokenType type) {
         return true;
     }
     return false;
+}
+
+std::string Parser::tokenTypeToString(TokenType type) const {
+    switch (type) {
+        case TokenType::IDENTIFIER: return "IDENTIFIER";
+        case TokenType::CONSTANT: return "CONSTANT";
+        case TokenType::INT_KEYWORD: return "INT";
+        case TokenType::VOID_KEYWORD: return "VOID";
+        case TokenType::RETURN_KEYWORD: return "RETURN";
+        case TokenType::OPEN_PAREN: return "(";
+        case TokenType::CLOSE_PAREN: return ")";
+        case TokenType::OPEN_BRACE: return "{";
+        case TokenType::CLOSE_BRACE: return "}";
+        case TokenType::SEMICOLON: return ";";
+        default: return "UNKNOWN";
+    }
 }

@@ -152,6 +152,7 @@ bool CompilerDriver::runParser(const std::vector<Token>& tokens) {
         return false;
     }
 }
+
 void CompilerDriver::printUsage() {
     std::cout << "Usage: your_compiler [options] input_file [output_file]" << std::endl;
     std::cout << "Options:" << std::endl;
