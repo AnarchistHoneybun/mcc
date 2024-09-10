@@ -136,19 +136,22 @@ bool CompilerDriver::runLexer(const std::string& input_file) {
     return true;
 }
 
+void CompilerDriver::printPrettyAST(const std::unique_ptr<Program>& ast) {
+    std::cout << "Pretty-printed AST:\n" << ast->prettyPrint() << std::endl;
+}
+
 bool CompilerDriver::runParser(const std::vector<Token>& tokens) {
     try {
         Parser parser(tokens);
         std::unique_ptr<Program> ast = parser.parse();
         std::cout << "Parsing successful. AST created." << std::endl;
-        // You can add more detailed AST printing here if needed
+        printPrettyAST(ast);
         return true;
     } catch (const ParseError& e) {
         std::cerr << "Parsing error: " << e.what() << std::endl;
         return false;
     }
 }
-
 void CompilerDriver::printUsage() {
     std::cout << "Usage: your_compiler [options] input_file [output_file]" << std::endl;
     std::cout << "Options:" << std::endl;
