@@ -1,17 +1,14 @@
-//
-// Created by vrin on 9/9/24.
-//
-
-#ifndef MCC_PARSER_H
-#define MCC_PARSER_H
-
-#endif //MCC_PARSER_H
-
 #pragma once
 #include <vector>
 #include <stdexcept>
+#include <string>
 #include "ast.h"
 #include "lexer.h"
+
+class ParseError : public std::runtime_error {
+public:
+    ParseError(const std::string& message) : std::runtime_error(message) {}
+};
 
 class Parser {
 public:
@@ -28,9 +25,5 @@ private:
     void expect(TokenType type);
     Token consumeToken();
     bool match(TokenType type);
-};
-
-class ParseError : public std::runtime_error {
-public:
-    explicit ParseError(const std::string& message) : std::runtime_error(message) {}
+    std::string tokenTypeToString(TokenType type) const;
 };
