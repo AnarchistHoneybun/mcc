@@ -10,4 +10,5 @@ add_executable(mcc main.cpp
         lexer.cpp
         ast.h
         parser.h
-        parser.cpp)
+        parser.cpp
+        assembly_ast.h)

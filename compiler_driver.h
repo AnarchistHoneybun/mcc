@@ -4,6 +4,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
+#include "assembly_ast.h"
 
 class CompilerDriver {
 public:
@@ -17,6 +18,7 @@ private:
     bool runLexer(const std::string& input_file);
     bool runParser(const std::vector<Token>& tokens);
     void printPrettyAST(const std::unique_ptr<Program>& ast);
+    bool generateCode(const std::unique_ptr<Program>& ast, const std::string& output_file);
     void printUsage();
 
     std::string m_input_file;

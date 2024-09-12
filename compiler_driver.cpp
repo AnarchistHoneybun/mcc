@@ -67,7 +67,31 @@ int CompilerDriver::run(int argc, char* argv[]) {
         }
         return runParser(tokens) ? 0 : 1;
     } else if (m_codegen_only) {
-        // Implement code generation (including lexer and parser)
+        std::ifstream file(m_input_file);
+        if (!file.is_open()) {
+            std::cerr << "Error: Unable to open file " << m_input_file << std::endl;
+            return 1;
+        }
+        std::string input((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        Lexer lexer(input);
+        std::vector<Token> tokens;
+        try {
+            tokens = lexer.tokenize();
+        } catch (const std::exception& e) {
+            std::cerr << "Lexer error: " << e.what() << std::endl;
+            return 1;
+        }
+
+        Parser parser(tokens);
+        std::unique_ptr<Program> ast;
+        try {
+            ast = parser.parse();
+        } catch (const ParseError& e) {
+            std::cerr << "Parsing error: " << e.what() << std::endl;
+            return 1;
+        }
+
+        return generateCode(ast, m_output_file + ".s") ? 0 : 1;
     } else {
         // Full compilation process
         if (!preprocess(m_input_file, m_output_file + ".i") ||
@@ -133,6 +157,18 @@ bool CompilerDriver::runLexer(const std::string& input_file) {
         std::cout << ", Value = \"" << token.value << "\"" << std::endl;
     }
 
+    return true;
+}
+
+bool CompilerDriver::generateCode(const std::unique_ptr<Program>& ast, const std::string& output_file) {
+    std::unique_ptr<assembly::AsmNode> asmProgram = ast->codegen();
+    std::ofstream outFile(output_file);
+    if (!outFile.is_open()) {
+        std::cerr << "Error: Unable to open output file " << output_file << std::endl;
+        return false;
+    }
+    outFile << asmProgram->emit();
+    std::cout << "Assembly code generated and written to " << output_file << std::endl;
     return true;
 }
 
