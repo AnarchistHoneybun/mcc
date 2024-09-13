@@ -1,20 +1,14 @@
-//
-// Created by vrin on 9/9/24.
-//
-
-#ifndef MCC_AST_H
-#define MCC_AST_H
-
-#endif //MCC_AST_H
 #pragma once
 #include <string>
 #include <memory>
 #include <sstream>
+#include "assembly_ast.h"
 
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
     virtual std::string prettyPrint(int indent = 0) const = 0;
+    virtual std::unique_ptr<assembly::AsmNode> codegen() const = 0;
 
 protected:
     static std::string indentString(int indent) {
@@ -37,6 +31,10 @@ public:
         oss << indentString(indent) << "Constant(" << value << ")";
         return oss.str();
     }
+
+    std::unique_ptr<assembly::AsmNode> codegen() const override {
+        return std::make_unique<assembly::Imm>(value);
+    }
 };
 
 class Statement : public ASTNode {
@@ -56,6 +54,20 @@ public:
             << indentString(indent) << ")";
         return oss.str();
     }
+
+    std::unique_ptr<assembly::AsmNode> codegen() const override {
+        auto expCode = exp->codegen();
+        auto* operand = dynamic_cast<assembly::Operand*>(expCode.get());
+        if (!operand) {
+            throw std::runtime_error("Expression did not generate an Operand");
+        }
+        auto movInstr = std::make_unique<assembly::Mov>(
+                std::unique_ptr<assembly::Operand>(operand),
+                std::make_unique<assembly::Register>("eax")
+        );
+        expCode.release(); // Release ownership as it's now managed by movInstr
+        return movInstr;
+    }
 };
 
 class Function : public ASTNode {
@@ -74,6 +86,15 @@ public:
             << indentString(indent) << ")";
         return oss.str();
     }
+
+    std::unique_ptr<assembly::AsmNode> codegen() const override {
+        std::vector<std::unique_ptr<assembly::Instruction>> instructions;
+        instructions.push_back(std::unique_ptr<assembly::Instruction>(
+                dynamic_cast<assembly::Instruction*>(body->codegen().release())
+        ));
+        instructions.push_back(std::make_unique<assembly::Ret>());
+        return std::make_unique<assembly::Function>(name, std::move(instructions));
+    }
 };
 
 class Program : public ASTNode {
@@ -88,5 +109,13 @@ public:
             << function->prettyPrint(indent + 1) << "\n"
             << indentString(indent) << ")";
         return oss.str();
+    }
+
+    std::unique_ptr<assembly::AsmNode> codegen() const override {
+        return std::make_unique<assembly::Program>(
+                std::unique_ptr<assembly::Function>(
+                        dynamic_cast<assembly::Function*>(function->codegen().release())
+                )
+        );
     }
 };
