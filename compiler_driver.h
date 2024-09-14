@@ -20,6 +20,7 @@ private:
     bool emitCode(const std::unique_ptr<assembly::Program>& asmProgram, const std::string& output_file);
     bool assemble(const std::string& input_file, const std::string& output_file);
     void printPrettyAST(const std::unique_ptr<Program>& ast);
+    void printPrettyAssemblyAST(const std::unique_ptr<assembly::Program>& asmProgram);
     void printUsage();
 
     std::string m_input_file;

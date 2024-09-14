@@ -19,6 +19,12 @@ namespace assembly {
     public:
         virtual ~AsmNode() = default;
         virtual std::string emit() const = 0;
+        virtual std::string prettyPrint(int indent = 0) const = 0;
+
+    protected:
+        static std::string indentString(int indent) {
+            return std::string(indent * 2, ' ');
+        }
     };
 
     class Operand : public AsmNode {
@@ -32,6 +38,9 @@ namespace assembly {
         std::string emit() const override {
             return "$" + std::to_string(value);
         }
+        std::string prettyPrint(int indent = 0) const override {
+            return indentString(indent) + "Imm(" + std::to_string(value) + ")";
+        }
         int value;
     };
 
@@ -40,6 +49,9 @@ namespace assembly {
         explicit Register(const std::string& name) : name(name) {}
         std::string emit() const override {
             return "%" + name;
+        }
+        std::string prettyPrint(int indent = 0) const override {
+            return indentString(indent) + "Register(\"" + name + "\")";
         }
         std::string name;
     };
@@ -56,6 +68,14 @@ namespace assembly {
         std::string emit() const override {
             return "movl " + src->emit() + ", " + dst->emit();
         }
+        std::string prettyPrint(int indent = 0) const override {
+            std::ostringstream oss;
+            oss << indentString(indent) << "Mov(\n"
+                << src->prettyPrint(indent + 1) << ",\n"
+                << dst->prettyPrint(indent + 1) << "\n"
+                << indentString(indent) << ")";
+            return oss.str();
+        }
         std::unique_ptr<Operand> src;
         std::unique_ptr<Operand> dst;
     };
@@ -64,6 +84,9 @@ namespace assembly {
     public:
         std::string emit() const override {
             return "ret";
+        }
+        std::string prettyPrint(int indent = 0) const override {
+            return indentString(indent) + "Ret()";
         }
     };
 
@@ -80,6 +103,18 @@ namespace assembly {
             }
             return oss.str();
         }
+        std::string prettyPrint(int indent = 0) const override {
+            std::ostringstream oss;
+            oss << indentString(indent) << "Function(\n"
+                << indentString(indent + 1) << "name=\"" << name << "\",\n"
+                << indentString(indent + 1) << "instructions=[\n";
+            for (const auto& instruction : instructions) {
+                oss << instruction->prettyPrint(indent + 2) << ",\n";
+            }
+            oss << indentString(indent + 1) << "]\n"
+                << indentString(indent) << ")";
+            return oss.str();
+        }
         std::string name;
         std::vector<std::unique_ptr<Instruction>> instructions;
     };
@@ -92,6 +127,13 @@ namespace assembly {
             std::ostringstream oss;
             oss << function->emit();
             oss << "\n.section .note.GNU-stack,\"\",@progbits\n";
+            return oss.str();
+        }
+        std::string prettyPrint(int indent = 0) const override {
+            std::ostringstream oss;
+            oss << indentString(indent) << "Program(\n"
+                << function->prettyPrint(indent + 1) << "\n"
+                << indentString(indent) << ")";
             return oss.str();
         }
         std::unique_ptr<Function> function;
