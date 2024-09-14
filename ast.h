@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <memory>
 #include <sstream>
@@ -7,7 +8,9 @@
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
+
     virtual std::string prettyPrint(int indent = 0) const = 0;
+
     virtual std::unique_ptr<assembly::AsmNode> codegen() const = 0;
 
 protected:
@@ -24,6 +27,7 @@ public:
 class Constant : public Exp {
 public:
     explicit Constant(int value) : value(value) {}
+
     int value;
 
     std::string prettyPrint(int indent = 0) const override {
@@ -45,6 +49,7 @@ public:
 class Return : public Statement {
 public:
     explicit Return(std::unique_ptr<Exp> exp) : exp(std::move(exp)) {}
+
     std::unique_ptr<Exp> exp;
 
     std::string prettyPrint(int indent = 0) const override {
@@ -57,7 +62,7 @@ public:
 
     std::unique_ptr<assembly::AsmNode> codegen() const override {
         auto expCode = exp->codegen();
-        auto* operand = dynamic_cast<assembly::Operand*>(expCode.get());
+        auto *operand = dynamic_cast<assembly::Operand *>(expCode.get());
         if (!operand) {
             throw std::runtime_error("Expression did not generate an Operand");
         }
@@ -74,6 +79,7 @@ class Function : public ASTNode {
 public:
     Function(std::string name, std::unique_ptr<Statement> body)
             : name(std::move(name)), body(std::move(body)) {}
+
     std::string name;
     std::unique_ptr<Statement> body;
 
@@ -90,7 +96,7 @@ public:
     std::unique_ptr<assembly::AsmNode> codegen() const override {
         std::vector<std::unique_ptr<assembly::Instruction>> instructions;
         instructions.push_back(std::unique_ptr<assembly::Instruction>(
-                dynamic_cast<assembly::Instruction*>(body->codegen().release())
+                dynamic_cast<assembly::Instruction *>(body->codegen().release())
         ));
         instructions.push_back(std::make_unique<assembly::Ret>());
         return std::make_unique<assembly::Function>(name, std::move(instructions));
@@ -101,6 +107,7 @@ class Program : public ASTNode {
 public:
     explicit Program(std::unique_ptr<Function> function)
             : function(std::move(function)) {}
+
     std::unique_ptr<Function> function;
 
     std::string prettyPrint(int indent = 0) const override {
@@ -114,7 +121,7 @@ public:
     std::unique_ptr<assembly::AsmNode> codegen() const override {
         return std::make_unique<assembly::Program>(
                 std::unique_ptr<assembly::Function>(
-                        dynamic_cast<assembly::Function*>(function->codegen().release())
+                        dynamic_cast<assembly::Function *>(function->codegen().release())
                 )
         );
     }

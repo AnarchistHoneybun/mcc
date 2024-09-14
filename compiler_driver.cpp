@@ -7,7 +7,7 @@
 CompilerDriver::CompilerDriver()
         : m_lex_only(false), m_parse_only(false), m_codegen_only(false) {}
 
-int CompilerDriver::run(int argc, char* argv[]) {
+int CompilerDriver::run(int argc, char *argv[]) {
     // Parse command line arguments
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -109,18 +109,18 @@ int CompilerDriver::run(int argc, char* argv[]) {
     return 0;
 }
 
-bool CompilerDriver::preprocess(const std::string& input_file, const std::string& output_file) {
+bool CompilerDriver::preprocess(const std::string &input_file, const std::string &output_file) {
     std::string command = "gcc -E -P " + input_file + " -o " + output_file;
     return system(command.c_str()) == 0;
 }
 
-bool CompilerDriver::assemble(const std::string& input_file, const std::string& output_file) {
+bool CompilerDriver::assemble(const std::string &input_file, const std::string &output_file) {
     std::string command = "gcc " + input_file + " -o " + output_file;
     return system(command.c_str()) == 0;
 }
 
 
-bool CompilerDriver::runLexer(const std::string& input_file, std::vector<Token>& tokens) {
+bool CompilerDriver::runLexer(const std::string &input_file, std::vector<Token> &tokens) {
     std::ifstream file(input_file);
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open file " << input_file << std::endl;
@@ -132,14 +132,14 @@ bool CompilerDriver::runLexer(const std::string& input_file, std::vector<Token>&
     Lexer lexer(input);
     try {
         tokens = lexer.tokenize();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         std::cerr << "Lexer error: " << e.what() << std::endl;
         return false;
     }
 
     if (m_lex_only) {
         // Output the tokens
-        for (const auto& token : tokens) {
+        for (const auto &token: tokens) {
             std::cout << "Token: Type = " << static_cast<int>(token.type)
                       << ", Value = \"" << token.value << "\"" << std::endl;
         }
@@ -148,7 +148,7 @@ bool CompilerDriver::runLexer(const std::string& input_file, std::vector<Token>&
     return true;
 }
 
-bool CompilerDriver::runParser(const std::vector<Token>& tokens, std::unique_ptr<Program>& ast) {
+bool CompilerDriver::runParser(const std::vector<Token> &tokens, std::unique_ptr<Program> &ast) {
     try {
         Parser parser(tokens);
         ast = parser.parse();
@@ -157,13 +157,13 @@ bool CompilerDriver::runParser(const std::vector<Token>& tokens, std::unique_ptr
             printPrettyAST(ast);
         }
         return true;
-    } catch (const ParseError& e) {
+    } catch (const ParseError &e) {
         std::cerr << "Parsing error: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool CompilerDriver::runCodeGen(const std::unique_ptr<Program>& ast, std::unique_ptr<assembly::Program>& asmProgram) {
+bool CompilerDriver::runCodeGen(const std::unique_ptr<Program> &ast, std::unique_ptr<assembly::Program> &asmProgram) {
     try {
         asmProgram = CodeGen::generate(*ast);
         if (m_codegen_only) {
@@ -171,13 +171,13 @@ bool CompilerDriver::runCodeGen(const std::unique_ptr<Program>& ast, std::unique
             printPrettyAssemblyAST(asmProgram);
         }
         return true;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         std::cerr << "Code generation error: " << e.what() << std::endl;
         return false;
     }
 }
 
-bool CompilerDriver::emitCode(const std::unique_ptr<assembly::Program>& asmProgram, const std::string& output_file) {
+bool CompilerDriver::emitCode(const std::unique_ptr<assembly::Program> &asmProgram, const std::string &output_file) {
     std::ofstream outFile(output_file);
     if (!outFile.is_open()) {
         std::cerr << "Error: Unable to open output file " << output_file << std::endl;
@@ -188,11 +188,11 @@ bool CompilerDriver::emitCode(const std::unique_ptr<assembly::Program>& asmProgr
     return true;
 }
 
-void CompilerDriver::printPrettyAST(const std::unique_ptr<Program>& ast) {
+void CompilerDriver::printPrettyAST(const std::unique_ptr<Program> &ast) {
     std::cout << "Pretty-printed AST:\n" << ast->prettyPrint() << std::endl;
 }
 
-void CompilerDriver::printPrettyAssemblyAST(const std::unique_ptr<assembly::Program>& asmProgram) {
+void CompilerDriver::printPrettyAssemblyAST(const std::unique_ptr<assembly::Program> &asmProgram) {
     std::cout << "Pretty-printed Assembly AST:\n" << asmProgram->prettyPrint() << std::endl;
 }
 

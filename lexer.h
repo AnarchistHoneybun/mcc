@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <vector>
 #include <regex>
@@ -23,7 +24,8 @@ struct Token {
 
 class Lexer {
 public:
-    Lexer(const std::string& input);
+    Lexer(const std::string &input);
+
     std::vector<Token> tokenize();
 
 private:
@@ -31,8 +33,12 @@ private:
     size_t m_position;
 
     void skipWhitespaceAndComments();
+
     void skipSingleLineComment();
+
     void skipMultiLineComment();
+
     Token getNextToken();
+
     std::pair<TokenType, std::string> findLongestMatch();
 };

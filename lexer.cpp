@@ -1,7 +1,7 @@
 #include "lexer.h"
 #include <stdexcept>
 
-Lexer::Lexer(const std::string& input) : m_input(input), m_position(0) {}
+Lexer::Lexer(const std::string &input) : m_input(input), m_position(0) {}
 
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
@@ -64,20 +64,21 @@ Token Lexer::getNextToken() {
 
 std::pair<TokenType, std::string> Lexer::findLongestMatch() {
     static const std::vector<std::pair<TokenType, std::regex>> token_regexes = {
-            {TokenType::IDENTIFIER, std::regex(R"([a-zA-Z_]\w*\b)")},
-            {TokenType::CONSTANT, std::regex(R"([0-9]+\b)")},
-            {TokenType::OPEN_PAREN, std::regex(R"(\()")},
+            {TokenType::IDENTIFIER,  std::regex(R"([a-zA-Z_]\w*\b)")},
+            {TokenType::CONSTANT,    std::regex(R"([0-9]+\b)")},
+            {TokenType::OPEN_PAREN,  std::regex(R"(\()")},
             {TokenType::CLOSE_PAREN, std::regex(R"(\))")},
-            {TokenType::OPEN_BRACE, std::regex(R"(\{)")},
+            {TokenType::OPEN_BRACE,  std::regex(R"(\{)")},
             {TokenType::CLOSE_BRACE, std::regex(R"(\})")},
-            {TokenType::SEMICOLON, std::regex(R"(;)")}
+            {TokenType::SEMICOLON,   std::regex(R"(;)")}
     };
 
     std::pair<TokenType, std::string> longest_match = {TokenType::IDENTIFIER, ""};
     std::string remaining = m_input.substr(m_position);
-    for (const auto& [type, regex] : token_regexes) {
+    for (const auto &[type, regex]: token_regexes) {
         std::smatch match;
-        if (std::regex_search(remaining.cbegin(), remaining.cend(), match, regex, std::regex_constants::match_continuous)) {
+        if (std::regex_search(remaining.cbegin(), remaining.cend(), match, regex,
+                              std::regex_constants::match_continuous)) {
             if (match.length() > longest_match.second.length()) {
                 longest_match = {type, match.str()};
             }

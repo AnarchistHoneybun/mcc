@@ -8,6 +8,7 @@
 #endif //MCC_ASSEMBLY_AST_H
 
 #pragma once
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -18,7 +19,9 @@ namespace assembly {
     class AsmNode {
     public:
         virtual ~AsmNode() = default;
+
         virtual std::string emit() const = 0;
+
         virtual std::string prettyPrint(int indent = 0) const = 0;
 
     protected:
@@ -35,24 +38,30 @@ namespace assembly {
     class Imm : public Operand {
     public:
         explicit Imm(int value) : value(value) {}
+
         std::string emit() const override {
             return "$" + std::to_string(value);
         }
+
         std::string prettyPrint(int indent = 0) const override {
             return indentString(indent) + "Imm(" + std::to_string(value) + ")";
         }
+
         int value;
     };
 
     class Register : public Operand {
     public:
-        explicit Register(const std::string& name) : name(name) {}
+        explicit Register(const std::string &name) : name(name) {}
+
         std::string emit() const override {
             return "%" + name;
         }
+
         std::string prettyPrint(int indent = 0) const override {
             return indentString(indent) + "Register(\"" + name + "\")";
         }
+
         std::string name;
     };
 
@@ -65,9 +74,11 @@ namespace assembly {
     public:
         Mov(std::unique_ptr<Operand> src, std::unique_ptr<Operand> dst)
                 : src(std::move(src)), dst(std::move(dst)) {}
+
         std::string emit() const override {
             return "movl " + src->emit() + ", " + dst->emit();
         }
+
         std::string prettyPrint(int indent = 0) const override {
             std::ostringstream oss;
             oss << indentString(indent) << "Mov(\n"
@@ -76,6 +87,7 @@ namespace assembly {
                 << indentString(indent) << ")";
             return oss.str();
         }
+
         std::unique_ptr<Operand> src;
         std::unique_ptr<Operand> dst;
     };
@@ -85,6 +97,7 @@ namespace assembly {
         std::string emit() const override {
             return "ret";
         }
+
         std::string prettyPrint(int indent = 0) const override {
             return indentString(indent) + "Ret()";
         }
@@ -92,29 +105,32 @@ namespace assembly {
 
     class Function : public AsmNode {
     public:
-        Function(const std::string& name, std::vector<std::unique_ptr<Instruction>> instructions)
+        Function(const std::string &name, std::vector<std::unique_ptr<Instruction>> instructions)
                 : name(name), instructions(std::move(instructions)) {}
+
         std::string emit() const override {
             std::ostringstream oss;
             oss << ".globl " << name << "\n";
             oss << name << ":\n";
-            for (const auto& instruction : instructions) {
+            for (const auto &instruction: instructions) {
                 oss << "    " << instruction->emit() << "\n";
             }
             return oss.str();
         }
+
         std::string prettyPrint(int indent = 0) const override {
             std::ostringstream oss;
             oss << indentString(indent) << "Function(\n"
                 << indentString(indent + 1) << "name=\"" << name << "\",\n"
                 << indentString(indent + 1) << "instructions=[\n";
-            for (const auto& instruction : instructions) {
+            for (const auto &instruction: instructions) {
                 oss << instruction->prettyPrint(indent + 2) << ",\n";
             }
             oss << indentString(indent + 1) << "]\n"
                 << indentString(indent) << ")";
             return oss.str();
         }
+
         std::string name;
         std::vector<std::unique_ptr<Instruction>> instructions;
     };
@@ -123,12 +139,14 @@ namespace assembly {
     public:
         explicit Program(std::unique_ptr<Function> function)
                 : function(std::move(function)) {}
+
         std::string emit() const override {
             std::ostringstream oss;
             oss << function->emit();
             oss << "\n.section .note.GNU-stack,\"\",@progbits\n";
             return oss.str();
         }
+
         std::string prettyPrint(int indent = 0) const override {
             std::ostringstream oss;
             oss << indentString(indent) << "Program(\n"
@@ -136,6 +154,7 @@ namespace assembly {
                 << indentString(indent) << ")";
             return oss.str();
         }
+
         std::unique_ptr<Function> function;
     };
 

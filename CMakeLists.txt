@@ -11,4 +11,6 @@ add_executable(mcc main.cpp
         ast.h
         parser.h
         parser.cpp
-        assembly_ast.h)
+        assembly_ast.h
+        codegen.h
+        codegen.cpp)

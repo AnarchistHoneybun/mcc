@@ -46,7 +46,8 @@ void Parser::expect(TokenType type) {
         throw ParseError("Expected " + tokenTypeToString(type) + " but found end of input");
     }
     if (m_tokens[m_position].type != type) {
-        throw ParseError("Expected " + tokenTypeToString(type) + " but found " + tokenTypeToString(m_tokens[m_position].type));
+        throw ParseError(
+                "Expected " + tokenTypeToString(type) + " but found " + tokenTypeToString(m_tokens[m_position].type));
     }
     m_position++;
 }
@@ -68,16 +69,27 @@ bool Parser::match(TokenType type) {
 
 std::string Parser::tokenTypeToString(TokenType type) const {
     switch (type) {
-        case TokenType::IDENTIFIER: return "IDENTIFIER";
-        case TokenType::CONSTANT: return "CONSTANT";
-        case TokenType::INT_KEYWORD: return "INT";
-        case TokenType::VOID_KEYWORD: return "VOID";
-        case TokenType::RETURN_KEYWORD: return "RETURN";
-        case TokenType::OPEN_PAREN: return "(";
-        case TokenType::CLOSE_PAREN: return ")";
-        case TokenType::OPEN_BRACE: return "{";
-        case TokenType::CLOSE_BRACE: return "}";
-        case TokenType::SEMICOLON: return ";";
-        default: return "UNKNOWN";
+        case TokenType::IDENTIFIER:
+            return "IDENTIFIER";
+        case TokenType::CONSTANT:
+            return "CONSTANT";
+        case TokenType::INT_KEYWORD:
+            return "INT";
+        case TokenType::VOID_KEYWORD:
+            return "VOID";
+        case TokenType::RETURN_KEYWORD:
+            return "RETURN";
+        case TokenType::OPEN_PAREN:
+            return "(";
+        case TokenType::CLOSE_PAREN:
+            return ")";
+        case TokenType::OPEN_BRACE:
+            return "{";
+        case TokenType::CLOSE_BRACE:
+            return "}";
+        case TokenType::SEMICOLON:
+            return ";";
+        default:
+            return "UNKNOWN";
     }
 }
