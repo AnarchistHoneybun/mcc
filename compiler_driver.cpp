@@ -5,7 +5,7 @@
 #include <cstdlib>
 
 CompilerDriver::CompilerDriver()
-        : m_lex_only(false), m_parse_only(false), m_codegen_only(false) {}
+        : m_lex_only(false), m_parse_only(false), m_codegen_only(false), m_emit_assembly(false) {}
 
 /**
  * @brief Runs the compiler driver with the given command line arguments.
