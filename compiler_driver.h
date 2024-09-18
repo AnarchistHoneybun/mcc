@@ -38,4 +38,5 @@ private:
     bool m_lex_only;
     bool m_parse_only;
     bool m_codegen_only;
+    bool m_emit_assembly;
 };

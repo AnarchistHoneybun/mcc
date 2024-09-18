@@ -27,6 +27,8 @@ int CompilerDriver::run(int argc, char *argv[]) {
             m_parse_only = true;
         } else if (arg == "--codegen") {
             m_codegen_only = true;
+        } else if (arg == "-S") {
+            m_emit_assembly = true;
         } else if (arg[0] == '-') {
             std::cerr << "Unknown option: " << arg << std::endl;
             printUsage();
@@ -101,6 +103,13 @@ int CompilerDriver::run(int argc, char *argv[]) {
     if (!emitCode(asmProgram, assembly_file)) {
         std::remove(preprocessed_file.c_str());
         return 1;
+    }
+
+    if (m_emit_assembly) {
+        // If -S flag is set, we stop here and keep the .s file
+        std::cout << "Assembly code generated and written to " << assembly_file << std::endl;
+        std::remove(preprocessed_file.c_str());
+        return 0;
     }
 
     // Assemble
@@ -259,4 +268,5 @@ void CompilerDriver::printUsage() {
     std::cout << "  --lex      Run only the lexer" << std::endl;
     std::cout << "  --parse    Run the lexer and parser" << std::endl;
     std::cout << "  --codegen  Run the lexer, parser, and code generation" << std::endl;
+    std::cout << "  -S         Emit assembly code only" << std::endl;
 }
