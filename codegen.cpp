@@ -1,9 +1,21 @@
 #include "codegen.h"
 
+/**
+ * @brief Generates an assembly program from the given abstract syntax tree (AST).
+ *
+ * @param ast The abstract syntax tree representing the program.
+ * @return A unique pointer to the generated assembly program.
+ */
 std::unique_ptr<assembly::Program> CodeGen::generate(const Program &ast) {
     return std::make_unique<assembly::Program>(generateFunction(*ast.function));
 }
 
+/**
+ * @brief Generates an assembly function from the given function AST node.
+ *
+ * @param function The function AST node.
+ * @return A unique pointer to the generated assembly function.
+ */
 std::unique_ptr<assembly::Function> CodeGen::generateFunction(const Function &function) {
     std::vector<std::unique_ptr<assembly::Instruction>> instructions;
     instructions.push_back(std::unique_ptr<assembly::Instruction>(
@@ -13,6 +25,12 @@ std::unique_ptr<assembly::Function> CodeGen::generateFunction(const Function &fu
     return std::make_unique<assembly::Function>(function.name, std::move(instructions));
 }
 
+/**
+ * @brief Generates an assembly statement from the given statement AST node.
+ *
+ * @param statement The statement AST node.
+ * @return A unique pointer to the generated assembly statement.
+ */
 std::unique_ptr<assembly::AsmNode> CodeGen::generateStatement(const Statement &statement) {
     if (const auto *returnStmt = dynamic_cast<const Return *>(&statement)) {
         auto expCode = generateExpression(*returnStmt->exp);
@@ -30,6 +48,12 @@ std::unique_ptr<assembly::AsmNode> CodeGen::generateStatement(const Statement &s
     throw std::runtime_error("Unsupported statement type");
 }
 
+/**
+ * @brief Generates an assembly operand from the given expression AST node.
+ *
+ * @param exp The expression AST node.
+ * @return A unique pointer to the generated assembly operand.
+ */
 std::unique_ptr<assembly::Operand> CodeGen::generateExpression(const Exp &exp) {
     if (const auto *constant = dynamic_cast<const Constant *>(&exp)) {
         return std::make_unique<assembly::Imm>(constant->value);

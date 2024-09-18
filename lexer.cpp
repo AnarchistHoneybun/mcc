@@ -3,6 +3,13 @@
 
 Lexer::Lexer(const std::string &input) : m_input(input), m_position(0) {}
 
+/**
+ * @brief Tokenizes the input string.
+ *
+ * @details Tokenizes the input string by finding the longest match of a token regex at the current position.
+ *
+ * @return A vector of tokens.
+ */
 std::vector<Token> Lexer::tokenize() {
     std::vector<Token> tokens;
     while (m_position < m_input.length()) {
@@ -14,6 +21,10 @@ std::vector<Token> Lexer::tokenize() {
     return tokens;
 }
 
+/**
+ * @brief Skips whitespace and comments.
+ *
+ */
 void Lexer::skipWhitespaceAndComments() {
     while (m_position < m_input.length()) {
         if (std::isspace(m_input[m_position])) {
@@ -51,6 +62,13 @@ void Lexer::skipMultiLineComment() {
     throw std::runtime_error("Unterminated multi-line comment");
 }
 
+/**
+ * @brief Gets the next token from the input string.
+ *
+ * @details Finds the longest match of a token regex at the current position and returns the token.
+ *
+ * @return The next token.
+ */
 Token Lexer::getNextToken() {
     auto [type, value] = findLongestMatch();
     if (type == TokenType::IDENTIFIER && (value == "int" || value == "void" || value == "return")) {
@@ -62,6 +80,15 @@ Token Lexer::getNextToken() {
     return {type, value};
 }
 
+/**
+ * @brief Finds the longest match of a token regex at the current position.
+ *
+ * @details Iterates through the token regexes and finds the longest match at the current position. Goes through
+ *         the token regexes in the order they are defined, and the remaining input string from the current position.
+ *
+ *
+ * @return A pair of the token type and value.
+ */
 std::pair<TokenType, std::string> Lexer::findLongestMatch() {
     static const std::vector<std::pair<TokenType, std::regex>> token_regexes = {
             {TokenType::IDENTIFIER,  std::regex(R"([a-zA-Z_]\w*\b)")},

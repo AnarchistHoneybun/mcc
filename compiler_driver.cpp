@@ -7,6 +7,16 @@
 CompilerDriver::CompilerDriver()
         : m_lex_only(false), m_parse_only(false), m_codegen_only(false) {}
 
+/**
+ * @brief Runs the compiler driver with the given command line arguments.
+ *
+ * @details The compiler driver runs compilation stages up to the specified stage and writes the intermediate output
+ * to the terminal, or (if no stage is specified) to a file. The command line args are the stage flags and the input file name.
+ *
+ * @param argc
+ * @param argv
+ * @return
+ */
 int CompilerDriver::run(int argc, char *argv[]) {
     // Parse command line arguments
     for (int i = 1; i < argc; ++i) {
@@ -109,17 +119,39 @@ int CompilerDriver::run(int argc, char *argv[]) {
     return 0;
 }
 
+/**
+ * @brief Preprocesses the input file using the GCC preprocessor.
+ *
+ * @param input_file The path to the input file to be preprocessed.
+ * @param output_file The path to the output file where the preprocessed content will be written.
+ * @returns `true` if preprocessing is successful, `false` otherwise.
+ */
 bool CompilerDriver::preprocess(const std::string &input_file, const std::string &output_file) {
     std::string command = "gcc -E -P " + input_file + " -o " + output_file;
     return system(command.c_str()) == 0;
 }
 
+/**
+ * @brief Assembles the given assembly file using GCC.
+ *
+ * @param input_file The path to the input assembly file.
+ * @param output_file The path to the output file where the executable will be written.
+ * @returns `true` if assembly is successful, `false` otherwise.
+ */
 bool CompilerDriver::assemble(const std::string &input_file, const std::string &output_file) {
     std::string command = "gcc " + input_file + " -o " + output_file;
     return system(command.c_str()) == 0;
 }
 
-
+/**
+ * @brief Runs the lexer on the input file.
+ *
+ * @details The lexer reads the input file, tokenizes it, and stores the tokens in the given vector.
+ *
+ * @param input_file The path to the input file to be tokenized.
+ * @param tokens The vector where the tokens will be stored.
+ * @returns `true` if the lexer runs successfully, `false` otherwise.
+ */
 bool CompilerDriver::runLexer(const std::string &input_file, std::vector<Token> &tokens) {
     std::ifstream file(input_file);
     if (!file.is_open()) {
@@ -148,6 +180,15 @@ bool CompilerDriver::runLexer(const std::string &input_file, std::vector<Token> 
     return true;
 }
 
+/**
+ * @brief Runs the parser on the given tokens.
+ *
+ * @details The parser reads the tokens, constructs an abstract syntax tree (AST), and stores it in the given pointer.
+ *
+ * @param tokens The tokens to be parsed.
+ * @param ast The pointer where the AST will be stored.
+ * @returns `true` if the parser runs successfully, `false` otherwise.
+ */
 bool CompilerDriver::runParser(const std::vector<Token> &tokens, std::unique_ptr<Program> &ast) {
     try {
         Parser parser(tokens);
@@ -163,6 +204,15 @@ bool CompilerDriver::runParser(const std::vector<Token> &tokens, std::unique_ptr
     }
 }
 
+/**
+ * @brief Runs the code generation stage on the given AST.
+ *
+ * @details The code generation stage reads the AST, generates an assembly AST, and stores it in the given pointer.
+ *
+ * @param ast The AST to generate code from.
+ * @param asmProgram The pointer where the assembly AST will be stored.
+ * @returns `true` if code generation is successful, `false` otherwise.
+ */
 bool CompilerDriver::runCodeGen(const std::unique_ptr<Program> &ast, std::unique_ptr<assembly::Program> &asmProgram) {
     try {
         asmProgram = CodeGen::generate(*ast);
@@ -177,6 +227,13 @@ bool CompilerDriver::runCodeGen(const std::unique_ptr<Program> &ast, std::unique
     }
 }
 
+/**
+ * @brief Emits the generated assembly code to the output file.
+ *
+ * @param asmProgram The assembly AST to emit.
+ * @param output_file The path to the output file where the assembly code will be written.
+ * @returns `true` if the code is emitted successfully, `false` otherwise.
+ */
 bool CompilerDriver::emitCode(const std::unique_ptr<assembly::Program> &asmProgram, const std::string &output_file) {
     std::ofstream outFile(output_file);
     if (!outFile.is_open()) {
